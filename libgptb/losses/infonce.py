@@ -65,7 +65,8 @@ class DebiasedInfoNCE(Loss):
         ng = (-num_neg * self.tau_plus * pos + neg_sum) / (1 - self.tau_plus)
         ng = torch.clamp(ng, min=num_neg * np.e ** (-1. / self.tau))
 
-        log_prob = sim - torch.log((pos + ng).sum(dim=1, keepdim=True))
+        # log_prob = sim - torch.log((pos + ng).sum(dim=1, keepdim=True))
+        log_prob = sim - torch.log(pos + ng)
         loss = log_prob * pos_mask
         loss = loss.sum(dim=1) / pos_mask.sum(dim=1)
         return loss.mean()

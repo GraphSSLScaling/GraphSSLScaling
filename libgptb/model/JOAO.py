@@ -82,17 +82,18 @@ class JOAO(AbstractGCLModel):
         
         gconv = GConv(input_dim=self.input_dim, hidden_dim=self.hidden_dim, num_layers=self.num_layers).to(self.device)
         self.encoder_model = Encoder(encoder=gconv, augmentor=(self.aug1, self.aug2)).to(self.device)
-        self.contrast_model = DualBranchContrast(loss=L.InfoNCE(tau=0.2), mode='G2G').to(self.device)  
+        self.contrast_model = DualBranchContrast(loss=L.InfoNCE(tau=0.2), mode='G2L').to(self.device)  
 
     def _update_aug2(self):
         """ Initialize aug2 with the current aug_P values. """
-        self.aug2 = A.RandomChoiceWithProb(
-            augmentors=[
-                A.NodeDropping(pn=0.1),
-                A.FeatureMasking(pf=0.1),
-                A.EdgeRemoving(pe=0.1),
-                A.Identity()
-            ], 
-            num_choices=1,
-            probabilities=self.aug_P
-        )
+        self.aug2 = A.EdgeRemoving(pe=0.1)
+        # self.aug2 = A.RandomChoiceWithProb(
+        #     augmentors=[
+        #         A.NodeDropping(pn=0.1),
+        #         A.FeatureMasking(pf=0.1),
+        #         A.EdgeRemoving(pe=0.1),
+        #         A.Identity()
+        #     ], 
+        #     num_choices=1,
+        #     probabilities=self.aug_P
+        # )

@@ -337,9 +337,14 @@ class JOAOExecutor(AbstractExecutor):
                 num_nodes = data.batch.size(0)
                 data.x = torch.ones((num_nodes, 1), dtype=torch.float32, device=data.batch.device)
 
-            _, _, _, _, g1, g2 = self.model.encoder_model(data.x, data.edge_index, data.batch)
+            # _, _, _, _, g1, g2 = self.model.encoder_model(data.x, data.edge_index, data.batch)
+            # g1, g2 = [self.model.encoder_model.encoder.project(g) for g in [g1, g2]]
+            # loss = self.model.contrast_model(g1=g1, g2=g2, batch=data.batch)
+            z, g, z1, z2, g1, g2 = self.model.encoder_model(data.x, data.edge_index, data.batch)
             g1, g2 = [self.model.encoder_model.encoder.project(g) for g in [g1, g2]]
-            loss = self.model.contrast_model(g1=g1, g2=g2, batch=data.batch)
+            z1, z2 = [self.model.encoder_model.encoder.project(z) for z in [z1, z2]]
+            loss = self.model.contrast_model(g1=g1, g2=g2,h1=z1, h2=z2, batch=data.batch)
+            # epoch_loss += loss.item()
             if train:
                 loss.backward()
                 self.optimizer.step()
@@ -361,9 +366,13 @@ class JOAOExecutor(AbstractExecutor):
                         num_nodes = data.batch.size(0)
                         data.x = torch.ones((num_nodes, 1), dtype=torch.float32, device=data.batch.device)
 
-                    _, _, _, _, g1, g2 = self.model.encoder_model(data.x, data.edge_index, data.batch)
+                    # _, _, _, _, g1, g2 = self.model.encoder_model(data.x, data.edge_index, data.batch)
+                    # g1, g2 = [self.model.encoder_model.encoder.project(g) for g in [g1, g2]]
+                    # loss = self.model.contrast_model(g1=g1, g2=g2, batch=data.batch)
+                    z, g, z1, z2, g1, g2 = self.model.encoder_model(data.x, data.edge_index, data.batch)
                     g1, g2 = [self.model.encoder_model.encoder.project(g) for g in [g1, g2]]
-                    loss = self.model.contrast_model(g1=g1, g2=g2, batch=data.batch)
+                    z1, z2 = [self.model.encoder_model.encoder.project(z) for z in [z1, z2]]
+                    loss = self.model.contrast_model(g1=g1, g2=g2,h1=z1, h2=z2, batch=data.batch)
                     loss_aug[n] += loss.item()*data.num_graphs
                     if self.mode == 'fast':
                             count += 1

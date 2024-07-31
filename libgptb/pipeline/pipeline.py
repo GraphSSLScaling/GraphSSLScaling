@@ -29,7 +29,7 @@ def run_model(task=None, model_name=None, dataset_name=None, config_file=None,
     exp_id = config.get('exp_id', None)
     if exp_id is None:
         # Make a new experiment ID
-        exp_id = int(random.SystemRandom().random() * 100000)
+        exp_id = int(random.SystemRandom().random() * 10000000)
         config['exp_id'] = exp_id
     # logger
     logger = get_logger(config)

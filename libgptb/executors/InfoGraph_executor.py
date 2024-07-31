@@ -37,6 +37,9 @@ class InfoGraphExecutor(AbstractExecutor):
                               str(param.device) + '\t' + str(param.requires_grad))
         total_num = sum([param.nelement() for param in self.model.parameters()])
         self._logger.info('Total parameter numbers: {}'.format(total_num))
+        
+        total_encoder_num = sum([param.nelement() for param in self.model.encoder_model.encoder.parameters()])
+        self._logger.info('Total encoder parameter numbers: {}'.format(total_encoder_num))
 
         self.epochs = self.config.get('max_epoch', 100)
         self.train_loss = self.config.get('train_loss', 'none')
@@ -209,7 +212,8 @@ class InfoGraphExecutor(AbstractExecutor):
         """
         self._logger.info('Start evaluating ...')
         #for epoch_idx in [10-1,20-1,40-1,60-1,80-1,100-1]:
-        for epoch_idx in [100-1,120-1,140-1,160-1,180-1,200-1]:
+        # for epoch_idx in [100-1,120-1,140-1,160-1,180-1,200-1]:
+        for epoch_idx in [100-1]:
             self.load_model_with_epoch(epoch_idx)
             if self.downstream_task == 'original' or self.downstream_task == 'both':
                 self.model.encoder_model.eval()
