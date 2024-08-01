@@ -8,13 +8,35 @@ from tqdm import tqdm
 from torch.optim import Adam
 from libgptb.evaluators import get_split, LREvaluator
 from libgptb.models import SingleBranchContrast, DualBranchContrast
-from torch_geometric.nn import global_add_pool,  GINConv
+from torch_geometric.nn import global_add_pool,  GINConv, MessagePassing
 from torch_geometric.nn.inits import uniform
 from libgptb.model.abstract_gcl_model import AbstractGCLModel
+from libgptb.model.graphgps.layer.gps_layer import GPSLayer
 
+
+        
+def make_gps_layer(input_dim, out_dim):
+    return GPSLayer(
+        dim_h=input_dim,
+        local_gnn_type='GIN',
+        global_model_type='Transformer',
+        num_heads=4,
+        log_attn_weights=False)
+
+class TransLayer(MessagePassing):
+    def __init__(self, input_dim, out_dim):
+        super(TransLayer, self).__init__()
+        self.mlp = nn.Sequential(
+            nn.Linear(input_dim, out_dim),
+            nn.ReLU(),
+            nn.Linear(out_dim, out_dim)
+        )
+
+    def forward(self, x, edge_index):
+        return self.mlp(x)
+    
 def make_gin_conv(input_dim, out_dim):
     return GINConv(nn.Sequential(nn.Linear(input_dim, out_dim), nn.ReLU(), nn.Linear(out_dim, out_dim)))
-
 
 class GConv(nn.Module):
     def __init__(self, input_dim, hidden_dim, activation, num_layers):
@@ -24,15 +46,16 @@ class GConv(nn.Module):
         self.batch_norms = nn.ModuleList()
         for i in range(num_layers):
             if i == 0:
-                self.layers.append(make_gin_conv(input_dim, hidden_dim))
+                self.layers.append(TransLayer(input_dim, hidden_dim))
             else:
-                self.layers.append(make_gin_conv(hidden_dim, hidden_dim))
+                self.layers.append(make_gps_layer(hidden_dim, hidden_dim))
             self.batch_norms.append(nn.BatchNorm1d(hidden_dim))
 
     def forward(self, x, edge_index, batch):
         z = x
         zs = []
         for conv, bn in zip(self.layers, self.batch_norms):
+            # print(z.shape)
             z = conv(z, edge_index)
             z = self.activation(z)
             z = bn(z)
