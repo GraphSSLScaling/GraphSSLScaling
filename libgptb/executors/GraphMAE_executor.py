@@ -16,7 +16,7 @@ from sklearn.model_selection import StratifiedKFold, GridSearchCV
 from torch.utils.tensorboard import SummaryWriter
 from libgptb.executors.abstract_executor import AbstractExecutor
 from libgptb.utils import get_evaluator, ensure_dir
-from libgptb.evaluators import get_split, LREvaluator, SVMEvaluator, PyTorchEvaluator, RocAucEvaluator, Logits_GraphMAE, APEvaluator
+from libgptb.evaluators import get_split, LREvaluator, SVMEvaluator, PyTorchEvaluator, RocAucEvaluator, Logits_GraphMAE, APEvaluator,OGBLSCEvaluator
 
 
 
@@ -212,7 +212,7 @@ class GraphMAEExecutor(AbstractExecutor):
         
         self._logger.info('Start evaluating ...')
         #for epoch_idx in [50-1, 100-1, 500-1, 1000-1, 10000-1]:
-        for epoch_idx in [10-1,20-1,40-1,60-1,80-1,100-1]:
+        for epoch_idx in [100-1]:
             self.load_model_with_epoch(epoch_idx)
             if epoch_idx+1 > self.epochs:
                 break
@@ -249,6 +249,9 @@ class GraphMAEExecutor(AbstractExecutor):
                 elif self.config['dataset'] == 'ogbg-molpcba':
                     result = APEvaluator(self.hidden_dim, self.label_dim)(x, y, split)
                     self._logger.info(f'(E): ap={result["ap"]:.4f}')
+                elif self.config['dataset'] == 'PCQM4Mv2':
+                    result = OGBLSCEvaluator()(x, y, split)
+                    self._logger.info(f'(E): Best test RMSE={result["best_test_rmse"]:.4f}, MAE={result["best_test_mae"]:.4f}, MAPE={result["best_test_mape"]:.4f}')
                 else:
                     result = SVMEvaluator(linear=True)(x, y, split)
                     print(f'(E): Best test F1Mi={result["micro_f1"]:.4f}, F1Ma={result["macro_f1"]:.4f}')

@@ -8,7 +8,7 @@ from logging import getLogger
 from torch.utils.tensorboard import SummaryWriter
 from libgptb.executors.abstract_executor import AbstractExecutor
 from libgptb.utils import get_evaluator, ensure_dir
-from libgptb.evaluators import get_split, SVMEvaluator, RocAucEvaluator, PyTorchEvaluator, Logits_InfoGraph, APEvaluator
+from libgptb.evaluators import get_split, SVMEvaluator, RocAucEvaluator, PyTorchEvaluator, Logits_InfoGraph, APEvaluator, LREvaluator,OGBLSCEvaluator
 from functools import partial
 
 
@@ -244,6 +244,9 @@ class InfoGraphExecutor(AbstractExecutor):
                 elif self.config['dataset'] == 'ogbg-molpcba':
                     result = APEvaluator(self.hidden_dim*self.num_layers, self.label_dim)(x, y, split)
                     self._logger.info(f'(E): ap={result["ap"]:.4f}')
+                elif self.config['dataset'] == 'PCQM4Mv2':
+                    result = OGBLSCEvaluator()(x, y, split)
+                    self._logger.info(f'(E): Best test RMSE={result["best_test_rmse"]:.4f}, MAE={result["best_test_mae"]:.4f}, MAPE={result["best_test_mape"]:.4f}')
                 else:
                     result = SVMEvaluator()(x, y, split)
                     print(f'(E): Best test F1Mi={result["micro_f1"]:.4f}, F1Ma={result["macro_f1"]:.4f}')

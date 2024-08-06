@@ -55,7 +55,7 @@
     },
     "SSGCL": {
         "allowed_model": ["MVGRLg","GraphCL","GraphCLE","GraphCLEN","GraphCLF","GraphCLN","JOAO","JOAOE","JOAOF","JOAON","GraphCLJSD","JOAOJSD","GraphMAE","InfoGraph","InfoGraphGTS","InfoGraphGPS","InfoGraphGIN","InfoGraphGINTwoTrans","InfoGraphGINRev","InfoGraphGINDec","InfoGraphGINDecAT","InfoGraphGINDecN","InfoGraphGINDecOne","InfoGraphGINDecTwo","InfoGraphGINDecOneN","InfoGraphGINDecTwoN","InfoGraphNCE","InfoGraphSGC","InfoGraphSGCSF"],
-        "allowed_dataset": ["MUTAG","reddit_threads","github_stargazers","ogbg-molhiv", "ogbg-ppa", "ogbg-molpcba"],
+        "allowed_dataset": ["MUTAG","reddit_threads","github_stargazers","ogbg-molhiv", "ogbg-ppa", "ogbg-molpcba","PCQM4Mv2"],
         "MVGRLg": {
             "dataset_class": "PyGDataset",
             "executor": "MVGRLgExecutor",
