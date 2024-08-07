@@ -136,7 +136,7 @@ class PyGDataset(AbstractDataset):
             dict: 包含数据集的相关特征的字典
         """
         # print(self.dataset[0].y.shape)
-        if self.datasetName in ["PCQM4Mv2"]:
+        if self.datasetName in ["PCQM4Mv2","ZINC_full"]:
             return {
                 "input_dim": max(self.dataset.num_features, 1),
                 "num_samples": len(self.dataset),

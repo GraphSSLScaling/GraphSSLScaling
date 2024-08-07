@@ -105,10 +105,10 @@ class MAEDataset(AbstractDataset):
             labels = torch.stack([torch.tensor(y) if not isinstance(y, torch.Tensor) else y for y in valid_labels])
         else:
             labels = torch.tensor([x.y for x in self.dataset]) 
-        if self.datasetName in ["ogbg-molhiv", "ogbg-molpcba",  "ogbg-code2", "PCQM4Mv2"]:
+        if self.datasetName in ["ogbg-molhiv", "ogbg-molpcba",  "ogbg-code2", "PCQM4Mv2","ZINC_full"]:
             for i, g in enumerate(self.dataset):
                 g.x = g.x.float()
-        if self.datasetName in ["PCQM4Mv2"]:
+        if self.datasetName in ["PCQM4Mv2","ZINC_full"]:
             num_classes = 1
         else:
             num_classes = torch.max(labels).item() + 1
@@ -169,7 +169,7 @@ class MAEDataset(AbstractDataset):
         Returns:
             dict: 包含数据集的相关特征的字典
         """
-        if self.datasetName in ["PCQM4Mv2"]:
+        if self.datasetName in ["PCQM4Mv2","ZINC_full"]:
             return {
                 "input_dim": max(self.num_features, 1),
                 "num_samples": len(self.dataset),

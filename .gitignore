@@ -16,3 +16,5 @@ __pycache__/
 /*.sh
 /Info-ogbg-molpcba/
 /rerun
+*.log
+.vscode/

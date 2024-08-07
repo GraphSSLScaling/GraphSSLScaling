@@ -327,7 +327,7 @@ class JOAOExecutor(AbstractExecutor):
         for epoch_idx in [100-1]:
             self.load_model_with_epoch(epoch_idx)
             if self.downstream_task in ['original','both']:
-                if self.config['dataset'] in ['PCQM4Mv2']:
+                if self.config['dataset'] in ['PCQM4Mv2','ZINC_full']:
                     self.model.encoder_model.eval()
                     result=self.downstream_regressor(dataloader)
                     self._logger.info(f'(E): Best test RMSE={result["best_test_rmse"]:.4f}, MAE={result["best_test_mae"]:.4f}, MAPE={result["best_test_mape"]:.4f}')
