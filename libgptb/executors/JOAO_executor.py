@@ -77,7 +77,7 @@ class JOAOExecutor(AbstractExecutor):
         self.DS=self.config.get("DS","MUTAG")
         self.hidden_dim = self.config.get('hidden_dim')
         self.num_layers = self.config.get('num_layers')
-        self.num_classes = self.config.get('num_class')
+        self.num_class = self.config.get('num_class')
         self.label_dim = data_feature.get('label_dim')
         self.downstream_task=config.get("downstream_task","original")
         self.train_ratio = self.config.get("train_ratio",0.8)
