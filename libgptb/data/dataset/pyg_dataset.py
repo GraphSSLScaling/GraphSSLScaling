@@ -24,7 +24,7 @@ class PyGDataset(AbstractDataset):
         self.downstream_task = self.config.get('downstream_task','original')
         self.task = self.config.get("task","GCL")
         self._load_data()
-        if self.datasetName not in ["PCQM4Mv2"]:
+        if self.datasetName not in ["PCQM4Mv2","ZINC_full"]:
             self.get_num_classes()
         else:
             self.num_class = 1
