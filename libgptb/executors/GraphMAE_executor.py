@@ -462,7 +462,7 @@ class GraphMAEExecutor(AbstractExecutor):
                 self._logger.info(message)
 
             #if epoch_idx+1 in [50, 100, 500, 1000, 10000]:
-            if epoch_idx+1 in range(10,101,10): #[10,20,30,40,50,60,70,80,90,100]:
+            if epoch_idx+1 in range(5,101,5): #[10,20,30,40,50,60,70,80,90,100]:
                 model_file_name = self.save_model_with_epoch(epoch_idx)
                 self._logger.info('saving to {}'.format(model_file_name))
 
