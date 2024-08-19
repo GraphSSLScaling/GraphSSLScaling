@@ -70,9 +70,9 @@ class MVGRLgExecutor(AbstractExecutor):
         self.downstream_ratio = self.config.get('downstream_ratio', 0.1)
         self.downstream_task = self.config.get('downstream_task','original')
         self.output_dim = self.config.get('output_dim', 1)
-        # TODO
+        
         self.optimizer = self._build_optimizer()
-        # TODO
+       
         self.lr_scheduler = self._build_lr_scheduler()
         self._epoch_num = self.config.get('epoch', 0)
         if self._epoch_num > 0:
@@ -83,10 +83,10 @@ class MVGRLgExecutor(AbstractExecutor):
 
     def save_model(self, cache_name):
         """
-        将当前的模型保存到文件
+        save model to cache_name
 
         Args:
-            cache_name(str): 保存的文件名
+            cache_name(str): name to save as
         """
         ensure_dir(self.cache_dir)
         self._logger.info("Saved model at " + cache_name)
@@ -94,10 +94,10 @@ class MVGRLgExecutor(AbstractExecutor):
 
     def load_model(self, cache_name):
         """
-        加载对应模型的 cache
+        load model from cache_name
 
         Args:
-            cache_name(str): 保存的文件名
+            cache_name(str): name to load from
         """
         self._logger.info("Loaded model at " + cache_name)
         model_state, optimizer_state = torch.load(cache_name)
@@ -123,7 +123,7 @@ class MVGRLgExecutor(AbstractExecutor):
 
     def load_model_with_epoch(self, epoch):
         """
-        加载某个epoch的模型
+        load model of the given epoch
 
         Args:
             epoch(int): 轮数
@@ -137,7 +137,7 @@ class MVGRLgExecutor(AbstractExecutor):
 
     def _build_optimizer(self):
         """
-        根据全局参数`learner`选择optimizer
+        chose 'optimizer' according to 'learner'
         """
         self._logger.info('You select `{}` optimizer.'.format(self.learner.lower()))
         if self.learner.lower() == 'adam':
@@ -163,7 +163,7 @@ class MVGRLgExecutor(AbstractExecutor):
 
     def _build_lr_scheduler(self):
         """
-        根据全局参数`lr_scheduler`选择对应的lr_scheduler
+        chose 'lr_scheduler' according to 'lr_scheduler'
         """
         if self.lr_decay:
             self._logger.info('You select `{}` lr_scheduler.'.format(self.lr_scheduler_type.lower()))
@@ -285,7 +285,7 @@ class MVGRLgExecutor(AbstractExecutor):
                     format(epoch_idx, self.epochs, np.mean(losses),  log_lr, (end_time - start_time))
                 self._logger.info(message)
 
-            #if epoch_idx+1 in [50, 100, 500, 1000, 10000]:
+            
             if epoch_idx+1 in [3,10,20,40,60,80,100]:
                 model_file_name = self.save_model_with_epoch(epoch_idx)
                 self._logger.info('saving to {}'.format(model_file_name))
@@ -314,15 +314,15 @@ class MVGRLgExecutor(AbstractExecutor):
 
     def _train_epoch(self, train_dataloader, epoch_idx, loss_func=None, train = True):
         """
-        完成模型一个轮次的训练
+        train for one epoch
 
         Args:
-            train_dataloader: 训练数据
-            epoch_idx: 轮次数
-            loss_func: 损失函数
+            train_dataloader: training data
+            epoch_idx: epoch index
+            loss_func: loss function
 
         Returns:
-            list: 每个batch的损失的数组
+            list: array of loss for each batch
         """
         if train:
             self.model.encoder_model.train()
@@ -338,7 +338,7 @@ class MVGRLgExecutor(AbstractExecutor):
 
             h1, h2, g1, g2 = self.model.encoder_model(data.x, data.edge_index, data.batch)
             loss = self.model.contrast_model(h1=h1, h2=h2, g1=g1, g2=g2, batch=data.batch)
-            # loss = loss_func(batch)
+
             self._logger.debug(loss.item())
             loss.backward()
             self.optimizer.step()

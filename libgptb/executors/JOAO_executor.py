@@ -96,10 +96,10 @@ class JOAOExecutor(AbstractExecutor):
 
     def save_model(self, cache_name):
         """
-        将当前的模型保存到文件
+        save model to cache_name
 
         Args:
-            cache_name(str): 保存的文件名
+            cache_name(str): name to save as
         """
         ensure_dir(self.cache_dir)
         self._logger.info("Saved model at " + cache_name)
@@ -107,10 +107,10 @@ class JOAOExecutor(AbstractExecutor):
 
     def load_model(self, cache_name):
         """
-        加载对应模型的 cache
+        load model from cache_name
 
         Args:
-            cache_name(str): 保存的文件名
+            cache_name(str): name to load from
         """
         self._logger.info("Loaded model at " + cache_name)
         model_state, optimizer_state = torch.load(cache_name)
@@ -131,7 +131,7 @@ class JOAOExecutor(AbstractExecutor):
 
     def load_model_with_epoch(self, epoch):
         """
-        加载某个epoch的模型
+        load model of the given epoch
 
         Args:
             epoch(int): 轮数
@@ -145,7 +145,7 @@ class JOAOExecutor(AbstractExecutor):
 
     def _build_optimizer(self):
         """
-        根据全局参数`learner`选择optimizer
+        chose 'optimizer' according to 'learner'
         """
         self._logger.info('You select `{}` optimizer.'.format(self.learner.lower()))
         if self.learner.lower() == 'adam':
@@ -171,7 +171,7 @@ class JOAOExecutor(AbstractExecutor):
 
     def _build_lr_scheduler(self):
         """
-        根据全局参数`lr_scheduler`选择对应的lr_scheduler
+        chose 'lr_scheduler' according to 'lr_scheduler'
         """
         if self.lr_decay:
             self._logger.info('You select `{}` lr_scheduler.'.format(self.lr_scheduler_type.lower()))
@@ -212,20 +212,20 @@ class JOAOExecutor(AbstractExecutor):
         return rmse, mae, mape
 
     def downstream_regressor(self,dataloader):
-        # 初始化模型和回归器
-        input_dim = self.hidden_dim*self.num_layers  # 这个需要在第一次获得embedding后确定
-        nhid = 128  # 你可以根据需要调整这个值
-        output_dim = 1    # 回归任务的输出维度为1
+         
+        input_dim = self.hidden_dim*self.num_layers   
+        nhid = 128   
+        output_dim = 1    
 
         regressor = None
         optimizer = None
         criterion = torch.nn.MSELoss()
 
-        # 按照指定比例划分数据集
-        downstream_ratio = self.downstream_ratio  # 下游任务训练集比例
-        test_ratio = 0.1  # 测试集比例
+         
+        downstream_ratio = self.downstream_ratio   
+        test_ratio = 0.1   
 
-        # 获取数据集的大小
+       
         num_samples = len(dataloader['full'])
         print(f'num_samples is {num_samples}')
         num_train = int(num_samples * downstream_ratio)
@@ -249,18 +249,18 @@ class JOAOExecutor(AbstractExecutor):
             for i, batch_g in enumerate(dataloader['full']):
                 data = batch_g.to(self.device)
                 feat = data.x
-                labels = data.y #.cpu().float()  # 将标签转换为浮点数
+                labels = data.y  
                 _, out, _, _, _, _ = self.model.encoder_model(data.x, data.edge_index, data.batch)
                 
                 if i < num_train:
                     regressor.train()
                     optimizer.zero_grad()
                     output = regressor(out)
-                    loss = criterion(output, labels.to(self.device).unsqueeze(1))  # 调整维度
+                    loss = criterion(output, labels.to(self.device).unsqueeze(1))  
                     loss.backward()
                     optimizer.step()
                     train_loss += loss.item()
-                    # print(train_loss)
+                     
                 else:
                     print(f'i is {i}')
                     break
@@ -270,7 +270,7 @@ class JOAOExecutor(AbstractExecutor):
                 all_predictions = []
                 all_labels = []
                 for j, test_batch in enumerate(dataloader['full']):
-                    # print(f'j is {j}')
+                    
                     if j >= num_test:
                         self._logger.debug(f'Processing batch: {j}')
                         test_batch = test_batch.to(self.device)
@@ -310,7 +310,7 @@ class JOAOExecutor(AbstractExecutor):
             self._logger.info('Evaluate result is saved at ' + os.path.join(save_path, '{}.json'.format(filename)))
         return result
     
-    # 定义回归模型
+  
 
 
 
@@ -322,8 +322,7 @@ class JOAOExecutor(AbstractExecutor):
             test_dataloader(torch.Dataloader): Dataloader
         """
         self._logger.info('Start evaluating ...')
-        #for epoch_idx in [10-1,20-1,40-1,60-1,80-1,100-1]:
-        # for epoch_idx in [100-1,120-1,140-1,160-1,180-1,200-1]:
+         
         for epoch_idx in [100-1]:
             self.load_model_with_epoch(epoch_idx)
             if self.downstream_task in ['original','both']:
@@ -354,16 +353,13 @@ class JOAOExecutor(AbstractExecutor):
                         result = RocAucEvaluator()(x, y, split)
                         print(f'(E): Roc-Auc={result["roc_auc"]:.4f}')
                     elif self.config['dataset'] == 'ogbg-ppa':
-                        #unique_classes = torch.unique(y)
-                        #nclasses = unique_classes.size(0)
+                         
                         self._logger.info('nclasses is {}'.format(self.num_class))
                         result = PyTorchEvaluator(n_features=x.shape[1],n_classes=self.num_class)(x, y, split)
                     elif self.config['dataset'] == 'ogbg-molpcba':
                         result = APEvaluator(self.hidden_dim*self.num_layers, self.label_dim)(x, y, split)
                         self._logger.info(f'(E): ap={result["ap"]:.4f}')
-                    # elif self.config['dataset'] == 'PCQM4Mv2':
-                    #     result = OGBLSCEvaluator()(x, y, split)
-                    #     self._logger.info(f'(E): Best test RMSE={result["best_test_rmse"]:.4f}, MAE={result["best_test_mae"]:.4f}, MAPE={result["best_test_mape"]:.4f}')
+                     
                     else:
                         result = SVMEvaluator()(x, y, split)
                         print(f'(E): Best test F1Mi={result["micro_f1"]:.4f}, F1Ma={result["macro_f1"]:.4f}')
@@ -418,7 +414,7 @@ class JOAOExecutor(AbstractExecutor):
                     format(epoch_idx, self.epochs, np.mean(losses),  log_lr, (end_time - start_time))
                 self._logger.info(message)
 
-            #if epoch_idx+1 in [50, 100, 500, 1000, 10000]:
+            
             if epoch_idx+1 in range(5,101,5):
                 model_file_name = self.save_model_with_epoch(epoch_idx)
                 self._logger.info('saving to {}'.format(model_file_name))
@@ -461,14 +457,11 @@ class JOAOExecutor(AbstractExecutor):
                 num_nodes = data.batch.size(0)
                 data.x = torch.ones((num_nodes, 1), dtype=torch.float32, device=data.batch.device)
 
-            # _, _, _, _, g1, g2 = self.model.encoder_model(data.x, data.edge_index, data.batch)
-            # g1, g2 = [self.model.encoder_model.encoder.project(g) for g in [g1, g2]]
-            # loss = self.model.contrast_model(g1=g1, g2=g2, batch=data.batch)
+            
             z, g, z1, z2, g1, g2 = self.model.encoder_model(data.x, data.edge_index, data.batch)
             g1, g2 = [self.model.encoder_model.encoder.project(g) for g in [g1, g2]]
             z1, z2 = [self.model.encoder_model.encoder.project(z) for z in [z1, z2]]
             loss = self.model.contrast_model(g1=g1, g2=g2,h1=z1, h2=z2, batch=data.batch)
-            # epoch_loss += loss.item()
             if train:
                 loss.backward()
                 self.optimizer.step()
@@ -490,9 +483,7 @@ class JOAOExecutor(AbstractExecutor):
                         num_nodes = data.batch.size(0)
                         data.x = torch.ones((num_nodes, 1), dtype=torch.float32, device=data.batch.device)
 
-                    # _, _, _, _, g1, g2 = self.model.encoder_model(data.x, data.edge_index, data.batch)
-                    # g1, g2 = [self.model.encoder_model.encoder.project(g) for g in [g1, g2]]
-                    # loss = self.model.contrast_model(g1=g1, g2=g2, batch=data.batch)
+                     
                     z, g, z1, z2, g1, g2 = self.model.encoder_model(data.x, data.edge_index, data.batch)
                     g1, g2 = [self.model.encoder_model.encoder.project(g) for g in [g1, g2]]
                     z1, z2 = [self.model.encoder_model.encoder.project(z) for z in [z1, z2]]

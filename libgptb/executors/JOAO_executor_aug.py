@@ -95,10 +95,10 @@ class JOAOAUGExecutor(AbstractExecutor):
 
     def save_model(self, cache_name):
         """
-        将当前的模型保存到文件
+        save model to cache_name
 
         Args:
-            cache_name(str): 保存的文件名
+            cache_name(str): name to save as
         """
         ensure_dir(self.cache_dir)
         self._logger.info("Saved model at " + cache_name)
@@ -106,10 +106,10 @@ class JOAOAUGExecutor(AbstractExecutor):
 
     def load_model(self, cache_name):
         """
-        加载对应模型的 cache
+        load model from cache_name
 
         Args:
-            cache_name(str): 保存的文件名
+            cache_name(str): name to load from
         """
         self._logger.info("Loaded model at " + cache_name)
         model_state, optimizer_state = torch.load(cache_name)
@@ -130,7 +130,7 @@ class JOAOAUGExecutor(AbstractExecutor):
 
     def load_model_with_epoch(self, epoch):
         """
-        加载某个epoch的模型
+        load model of the given epoch
 
         Args:
             epoch(int): 轮数
@@ -144,7 +144,7 @@ class JOAOAUGExecutor(AbstractExecutor):
 
     def _build_optimizer(self):
         """
-        根据全局参数`learner`选择optimizer
+        chose 'optimizer' according to 'learner'
         """
         self._logger.info('You select `{}` optimizer.'.format(self.learner.lower()))
         if self.learner.lower() == 'adam':
@@ -170,7 +170,7 @@ class JOAOAUGExecutor(AbstractExecutor):
 
     def _build_lr_scheduler(self):
         """
-        根据全局参数`lr_scheduler`选择对应的lr_scheduler
+        chose 'lr_scheduler' according to 'lr_scheduler'
         """
         if self.lr_decay:
             self._logger.info('You select `{}` lr_scheduler.'.format(self.lr_scheduler_type.lower()))
@@ -209,7 +209,6 @@ class JOAOAUGExecutor(AbstractExecutor):
             test_dataloader(torch.Dataloader): Dataloader
         """
         self._logger.info('Start evaluating ...')
-        #for epoch_idx in [50-1, 100-1, 500-1, 1000-1, 10000-1]: 3-1,10-1,20-1,40-1,60-1,80-1,
         for epoch_idx in [100-1]:
                 if epoch_idx+1 > self.epochs:
                     break
@@ -294,7 +293,7 @@ class JOAOAUGExecutor(AbstractExecutor):
                     format(epoch_idx, self.epochs, np.mean(losses),  log_lr, (end_time - start_time))
                 self._logger.info(message)
 
-            #if epoch_idx+1 in [50, 100, 500, 1000, 10000]:
+            
             if epoch_idx+1 in [3,10,20,40,60,80,100]:
                 model_file_name = self.save_model_with_epoch(epoch_idx)
                 self._logger.info('saving to {}'.format(model_file_name))
@@ -337,69 +336,15 @@ class JOAOAUGExecutor(AbstractExecutor):
                 num_nodes = data.batch.size(0)
                 data.x = torch.ones((num_nodes, 1), dtype=torch.float32, device=data.batch.device)
 
-            # _, _, _, _, g1, g2 = self.model.encoder_model(data.x, data.edge_index, data.batch)
-            # g1, g2 = [self.model.encoder_model.encoder.project(g) for g in [g1, g2]]
-            # loss = self.model.contrast_model(g1=g1, g2=g2, batch=data.batch)
+            
             z, g, z1, z2, g1, g2 = self.model.encoder_model(data.x, data.edge_index, data.batch)
             g1, g2 = [self.model.encoder_model.encoder.project(g) for g in [g1, g2]]
             z1, z2 = [self.model.encoder_model.encoder.project(z) for z in [z1, z2]]
             loss = self.model.contrast_model(g1=g1, g2=g2,h1=z1, h2=z2, batch=data.batch)
-            # epoch_loss += loss.item()
             if train:
                 loss.backward()
                 self.optimizer.step()
             epoch_loss += loss.item()
 
-        # #minimax 
-        # loss_aug = np.zeros(4)
-        # for n in range(4):
-        #     _aug_P = np.zeros(4)
-        #     _aug_P[n] = 1
-        #     dataset_aug_P = _aug_P
-        #     count, count_stop = 0, len(train_dataloader)//4+1
-        #     with torch.no_grad():
-        #          for data in train_dataloader:
-        #             data = data.to(self.device)
-        #             self.optimizer.zero_grad()
-
-        #             if data.x is None:
-        #                 num_nodes = data.batch.size(0)
-        #                 data.x = torch.ones((num_nodes, 1), dtype=torch.float32, device=data.batch.device)
-
-        #             # _, _, _, _, g1, g2 = self.model.encoder_model(data.x, data.edge_index, data.batch)
-        #             # g1, g2 = [self.model.encoder_model.encoder.project(g) for g in [g1, g2]]
-        #             # loss = self.model.contrast_model(g1=g1, g2=g2, batch=data.batch)
-        #             z, g, z1, z2, g1, g2 = self.model.encoder_model(data.x, data.edge_index, data.batch)
-        #             g1, g2 = [self.model.encoder_model.encoder.project(g) for g in [g1, g2]]
-        #             z1, z2 = [self.model.encoder_model.encoder.project(z) for z in [z1, z2]]
-        #             loss = self.model.contrast_model(g1=g1, g2=g2,h1=z1, h2=z2, batch=data.batch)
-        #             loss_aug[n] += loss.item()*data.num_graphs
-        #             if self.mode == 'fast':
-        #                     count += 1
-        #                     if count == count_stop:
-        #                         break
-        #     if self.mode == 'fast':
-        #         loss_aug[n] /= (count_stop*self.batch_size)
-        #     else:
-        #         loss_aug[n] /= len(train_dataloader.dataset)
-
-        # gamma = float(self.gamma)
-        # beta = 1
-        # b = self.model.aug_P + beta * (loss_aug - gamma * (self.model.aug_P - 1/5))
-
-        # mu_min, mu_max = b.min()-1/4, b.max()-1/4
-        # mu = (mu_min + mu_max) / 2
-        # # bisection method
-        # while abs(np.maximum(b-mu, 0).sum() - 1) > 1e-2:
-        #     if np.maximum(b-mu, 0).sum() > 1:
-        #         mu_min = mu
-        #     else:
-        #         mu_max = mu
-        #     mu = (mu_min + mu_max) / 2
-
-        # self.model.aug_P = np.maximum(b-mu, 0)
-        # self.model.aug_P /= np.sum(self.model.aug_P)
-        # self.model._update_aug2()
-        
         return epoch_loss
         

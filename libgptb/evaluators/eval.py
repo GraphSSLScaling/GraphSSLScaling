@@ -46,34 +46,3 @@ def get_predefined_split(x_train, x_val, y_train, y_val, return_array=True):
         return ps, [x, y]
     return ps
 
-
-# class BaseEvaluator(ABC):
-#     @abstractmethod
-#     def evaluate(self, x: torch.FloatTensor, y: torch.LongTensor, split: dict) -> dict:
-#         pass
-
-#     def __call__(self, x: torch.FloatTensor, y: torch.LongTensor, split: dict) -> dict:
-#         for key in ['train', 'test', 'valid']:
-#             assert key in split
-
-#         result = self.evaluate(x, y, split)
-#         return result
-
-
-# class BaseSKLearnEvaluator(BaseEvaluator):
-#     def __init__(self, evaluator, params):
-#         self.evaluator = evaluator
-#         self.params = params
-
-#     def evaluate(self, x, y, split):
-#         x_train, x_test, x_val, y_train, y_test, y_val = split_to_numpy(x, y, split)
-#         ps, [x_train, y_train] = get_predefined_split(x_train, x_val, y_train, y_val)
-#         classifier = GridSearchCV(self.evaluator, self.params, cv=ps, scoring='accuracy', verbose=0)
-#         classifier.fit(x_train, y_train)
-#         test_macro = f1_score(y_test, classifier.predict(x_test), average='macro')
-#         test_micro = f1_score(y_test, classifier.predict(x_test), average='micro')
-
-#         return {
-#             'micro_f1': test_micro,
-#             'macro_f1': test_macro,
-#         }

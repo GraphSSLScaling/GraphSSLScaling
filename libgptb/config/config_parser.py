@@ -22,7 +22,6 @@ class ConfigParser(object):
         self.config = {}
         self._parse_external_config(task, model, dataset, saved_model, train, other_args, hyper_config_dict)
         self._parse_config_file(config_file,task)
-        # TODO: Check if default config is necessary for GCL
         self._load_default_config() 
         self._init_device()
 
@@ -34,25 +33,25 @@ class ConfigParser(object):
             raise ValueError('the parameter model should not be None!')
         if dataset is None:
             raise ValueError('the parameter dataset should not be None!')
-        # 目前暂定这三个参数必须由用户指定
+        # 
         self.config['task'] = task
         self.config['model'] = model
         self.config['dataset'] = dataset
         self.config['saved_model'] = saved_model
         self.config['train'] = False if task == 'map_matching' else train
         if other_args is not None:
-            # TODO: 这里可以设计加入参数检查，哪些参数是允许用户通过命令行修改的
+            # add param check
             for key in other_args:
                 self.config[key] = other_args[key]
         if hyper_config_dict is not None:
-            # 超参数调整时传入的待调整的参数，优先级低于命令行参数
+            # hyper param < comman line
             for key in hyper_config_dict:
                 self.config[key] = hyper_config_dict[key]
 
     def _parse_config_file(self, config_file, task):
         if config_file is not None :
             self.config['config_file'] = config_file.split('/')[-1]
-            # TODO: 对 config file 的格式进行检查
+            # config file format check
             if os.path.exists('./{}.json'.format(config_file)):
                 with open('./{}.json'.format(config_file), 'r') as f:
                     x = json.load(f)
@@ -66,7 +65,7 @@ class ConfigParser(object):
                     file.'.format(config_file))
 
     def _load_default_config(self):
-        # 首先加载 task config
+        # load task config first
         with open('./libgptb/config/task_config.json', 'r') as f:
             task_config = json.load(f)
             if self.config['task'] not in task_config:
@@ -78,7 +77,7 @@ class ConfigParser(object):
                 raise ValueError('task {} do not support model {}'.format(
                     self.config['task'], self.config['model']))
             model = self.config['model']
-            # 加载 dataset、executor、evaluator 的模块
+            # losd dataset、executor module
             if 'dataset_class' not in self.config:
                 self.config['dataset_class'] = task_config[model]['dataset_class']
             if self.config['task'] == 'traj_loc_pred' and 'traj_encoder' not in self.config:
@@ -93,34 +92,19 @@ class ConfigParser(object):
             if self.config['dataset'] not in task_config['allowed_dataset']:
                 raise ValueError('task {} do not support dataset {}'.format(
                     self.config['task'], self.config['dataset']))
-        # 接着加载每个阶段的 default config
+        # load each default config
         default_file_list = []
         # model
         default_file_list.append('model/{}/{}.json'.format(self.config['task'], self.config['model']))
-        # dataset
-        # default_file_list.append('data/{}.json'.format(self.config['dataset_class']))
         # executor
         default_file_list.append('executors/{}.json'.format(self.config['executor']))
-        # evaluator
-        # default_file_list.append('evaluator/{}.json'.format(self.config['evaluator']))
-        # 加载所有默认配置
+        # load all deafult config
         for file_name in default_file_list:
             with open('./libgptb/config/{}'.format(file_name), 'r') as f:
                 x = json.load(f)
                 for key in x:
                     if key not in self.config:
                         self.config[key] = x[key]
-        # 加载数据集config.json
-        # with open('./raw_data/{}/config.json'.format(self.config['dataset']), 'r') as f:
-        #     x = json.load(f)
-        #     for key in x:
-        #         if key == 'info':
-        #             for ik in x[key]:
-        #                 if ik not in self.config:
-        #                     self.config[ik] = x[key][ik]
-        #         else:
-        #             if key not in self.config:
-        #                 self.config[key] = x[key]
 
     def _init_device(self):
         use_gpu = self.config.get('gpu', True)
@@ -146,6 +130,6 @@ class ConfigParser(object):
     def __contains__(self, key):
         return key in self.config
 
-    # 支持迭代操作
+    
     def __iter__(self):
         return self.config.__iter__()

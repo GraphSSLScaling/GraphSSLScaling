@@ -27,8 +27,6 @@ class APEvaluator(BaseEvaluator):
         self.optimizer = optim.SGD(self.model.parameters(), lr=lr)
         self.epochs = epochs
         self.criterion = nn.BCEWithLogitsLoss()
-        # Cross-entropy loss for multi-class classification
-        # Binary classification should also be fine
 
     def evaluate(self, x, y, split):
         x_train, x_test, x_val, y_train, y_test, y_val = split_to_numpy(x, y, split)
@@ -59,8 +57,7 @@ class APEvaluator(BaseEvaluator):
         y_test = y_test.view(pred_label.shape).numpy()
         y_pred=pred_label
         y_true=y_test
-        # input_dict = {"y_true": y_test, "y_pred": pred_label}
-        # return evaluator.eval(input_dict)
+
         ap_list = []
         for i in range(y_true.shape[1]):
             #AUC is only defined when there is at least one positive data.

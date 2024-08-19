@@ -65,10 +65,7 @@ def semi_loss(z1, adj1, z2, adj2, confmatrix, tau):
         f = lambda x: torch.exp(x / tau)
         refl_sim = f(sim(z1, z1))
         between_sim = f(sim(z1, z2))
-        # if mean:
         pos = between_sim.diag() + (refl_sim * adj1 * confmatrix).sum(1) / (adj1.sum(1)+0.01) 
-        # else:
-            # pos = between_sim.diag() + (refl_sim * adj1 * confmatrix).sum(1)
         neg = refl_sim.sum(1) + between_sim.sum(1) - refl_sim.diag() - (refl_sim * adj1).sum(1) - (between_sim * adj2).sum(1)
         loss = -torch.log(pos / (pos + neg))
 
