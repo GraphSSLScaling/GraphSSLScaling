@@ -40,8 +40,6 @@ class MAEDataset(AbstractDataset):
         deg4feat=False
         if self.datasetName in ["REDDIT-BINARY" "PROTEINS"]:
             deg4feat=True
-        # original paper choices of datasets.
-        #if self.datasetName in ['MUTAG', 'PTC_MR', 'IMDB-BINARY', 'IMDB-MULTI', 'REDDIT-BINARY', 'REDDIT-MULTI-5K']:
         if self.datasetName in ["MUTAG", "MCF-7", "MOLT-4","P388","ZINC_full","reddit_threads","github_stargazers"]:   
             tu_dataset = getattr(importlib.import_module('torch_geometric.datasets'), 'TUDataset')
             self.dataset = tu_dataset(root=path, name=self.datasetName)
@@ -79,7 +77,6 @@ class MAEDataset(AbstractDataset):
                 for d, n in Counter(degrees).items():
                     if d > MAX_DEGREES:
                         oversize += n
-            # print(f"N > {MAX_DEGREES}, #NUM: {oversize}, ratio: {oversize/sum(degrees):.8f}")
                 feature_dim = min(feature_dim, MAX_DEGREES)
 
                 feature_dim += 1
@@ -163,11 +160,8 @@ class MAEDataset(AbstractDataset):
         
     def get_data_feature(self):
         """
-        返回数据集特征，scaler是归一化方法，adj_mx是邻接矩阵，num_nodes是点的个数，
-        feature_dim是输入数据的维度，output_dim是模型输出的维度
-
         Returns:
-            dict: 包含数据集的相关特征的字典
+            dict: dataset's feature
         """
         if self.datasetName in ["PCQM4Mv2","ZINC_full"]:
             return {

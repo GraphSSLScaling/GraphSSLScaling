@@ -1,6 +1,5 @@
 {
     "gpu": true,
-    "gpu_id": 4,
     "max_epoch": 100,
     "train_loss": "none",
     "epoch": 0,

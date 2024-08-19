@@ -37,7 +37,7 @@ def generate_dataloader(train_data, eval_data, test_data, feature_name,
     create dataloader(train/test/eval)
 
     Args:
-        train_data(list of input): 训练数据，data 中每个元素是模型单次的输入，input 是一个 list，里面存放单次输入和 target
+        train_data(list of input): training data，data 中每个元素是模型单次的输入，input 是一个 list，里面存放单次输入和 target
         eval_data(list of input): 验证数据，data 中每个元素是模型单次的输入，input 是一个 list，里面存放单次输入和 target
         test_data(list of input): 测试数据，data 中每个元素是模型单次的输入，input 是一个 list，里面存放单次输入和 target
         feature_name(dict): 描述上面 input 每个元素对应的特征名, 应保证len(feature_name) = len(input)
@@ -92,7 +92,7 @@ def generate_dataloader_pad(train_data, eval_data, test_data, feature_name,
     create dataloader(train/test/eval)
 
     Args:
-        train_data(list of input): 训练数据，data 中每个元素是模型单次的输入，input 是一个 list，里面存放单次输入和 target
+        train_data(list of input): training data，data 中每个元素是模型单次的输入，input 是一个 list，里面存放单次输入和 target
         eval_data(list of input): 验证数据，data 中每个元素是模型单次的输入，input 是一个 list，里面存放单次输入和 target
         test_data(list of input): 测试数据，data 中每个元素是模型单次的输入，input 是一个 list，里面存放单次输入和 target
         feature_name(dict): 描述上面 input 每个元素对应的特征名, 应保证len(feature_name) = len(input)

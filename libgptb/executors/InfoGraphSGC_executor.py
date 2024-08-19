@@ -74,9 +74,9 @@ class InfoGraphSGCExecutor(AbstractExecutor):
         self.num_layers = self.config.get('layers')
         self.num_classes = self.config.get('num_class')
         self.label_dim = data_feature.get('label_dim')
-        # TODO
+        
         self.optimizer = self._build_optimizer()
-        # TODO
+        
         self.lr_scheduler = self._build_lr_scheduler()
         self._epoch_num = self.config.get('epoch', 0)
         if self._epoch_num > 0:
@@ -89,10 +89,10 @@ class InfoGraphSGCExecutor(AbstractExecutor):
 
     def save_model(self, cache_name):
         """
-        将当前的模型保存到文件
+        save model to cache_name
 
         Args:
-            cache_name(str): 保存的文件名
+            cache_name(str): name to save as
         """
         ensure_dir(self.cache_dir)
         self._logger.info("Saved model at " + cache_name)
@@ -100,10 +100,10 @@ class InfoGraphSGCExecutor(AbstractExecutor):
 
     def load_model(self, cache_name):
         """
-        加载对应模型的 cache
+        load model from cache_name
 
         Args:
-            cache_name(str): 保存的文件名
+            cache_name(str): name to load from
         """
         self._logger.info("Loaded model at " + cache_name)
         model_state, optimizer_state = torch.load(cache_name)
@@ -129,7 +129,7 @@ class InfoGraphSGCExecutor(AbstractExecutor):
 
     def load_model_with_epoch(self, epoch):
         """
-        加载某个epoch的模型
+        load model of the given epoch
 
         Args:
             epoch(int): 轮数
@@ -143,7 +143,7 @@ class InfoGraphSGCExecutor(AbstractExecutor):
 
     def _build_optimizer(self):
         """
-        根据全局参数`learner`选择optimizer
+        chose 'optimizer' according to 'learner'
         """
         self._logger.info('You select `{}` optimizer.'.format(self.learner.lower()))
         if self.learner.lower() == 'adam':
@@ -169,7 +169,7 @@ class InfoGraphSGCExecutor(AbstractExecutor):
 
     def _build_lr_scheduler(self):
         """
-        根据全局参数`lr_scheduler`选择对应的lr_scheduler
+        chose 'lr_scheduler' according to 'lr_scheduler'
         """
         if self.lr_decay:
             self._logger.info('You select `{}` lr_scheduler.'.format(self.lr_scheduler_type.lower()))
@@ -208,8 +208,7 @@ class InfoGraphSGCExecutor(AbstractExecutor):
             test_dataloader(torch.Dataloader): Dataloader
         """
         self._logger.info('Start evaluating ...')
-        #for epoch_idx in [10-1,20-1,40-1,60-1,80-1,100-1]:
-        # for epoch_idx in [100-1,120-1,140-1,160-1,180-1,200-1]:
+         
         for epoch_idx in [100-1]:
             self.load_model_with_epoch(epoch_idx)
             if self.downstream_task == 'original' or self.downstream_task == 'both':
@@ -234,8 +233,6 @@ class InfoGraphSGCExecutor(AbstractExecutor):
                     result = RocAucEvaluator()(x, y, split)
                     print(f'(E): Roc-Auc={result["roc_auc"]:.4f}')
                 elif self.config['dataset'] == 'ogbg-ppa':
-                    #unique_classes = torch.unique(y)
-                    #nclasses = unique_classes.size(0)
                     self._logger.info('nclasses is {}'.format(self.num_class))
                     result = PyTorchEvaluator(n_features=x.shape[1],n_classes=self.num_class)(x, y, split)
                 elif self.config['dataset'] == 'ogbg-molpcba':
@@ -309,7 +306,7 @@ class InfoGraphSGCExecutor(AbstractExecutor):
                     format(epoch_idx, self.epochs, np.mean(losses),  log_lr, (end_time - start_time))
                 self._logger.info(message)
 
-            #if epoch_idx+1 in [50, 100, 500, 1000, 10000]:
+            
             if epoch_idx+1 in [10,20,40,60,80,100,120,140,160,180,200]:
                 model_file_name = self.save_model_with_epoch(epoch_idx)
                 self._logger.info('saving to {}'.format(model_file_name))
@@ -338,15 +335,15 @@ class InfoGraphSGCExecutor(AbstractExecutor):
 
     def _train_epoch(self, train_dataloader, epoch_idx, loss_func=None, train = True):
         """
-        完成模型一个轮次的训练
+        train for one epoch
 
         Args:
-            train_dataloader: 训练数据
-            epoch_idx: 轮次数
-            loss_func: 损失函数
+            train_dataloader: training data
+            epoch_idx: epoch index
+            loss_func: loss function
 
         Returns:
-            list: 每个batch的损失的数组
+            list: array of loss for each batch
         """
         if train:
             self.model.encoder_model.train()
@@ -361,8 +358,6 @@ class InfoGraphSGCExecutor(AbstractExecutor):
                 z, g = self.model.encoder_model(data.x, data.edge_index, data.batch)
                 z, g = self.model.encoder_model.project(z, g)
                 loss = self.model.contrast_model(h=z, g=g, batch=data.batch)
-                # loss = loss_func(batch)
-                # print(loss.item())
                 self._logger.debug(loss.item())
                 loss.backward()
                 self.optimizer.step()
@@ -381,24 +376,17 @@ class InfoGraphSGCExecutor(AbstractExecutor):
                 z, g = self.model.encoder_model(data.x, data.edge_index, data.batch)
                 z, g = self.model.encoder_model.project(z, g)
                 loss = self.model.contrast_model(h=z, g=g, batch=data.batch)
-                # loss = loss_func(batch)
-                # print(loss.item())
                 self._logger.debug(loss.item())
-                # 记录更新前的参数
+
                 original_parameters = {name: param.clone() for name, param in self.model.named_parameters()}
 
-                # 参数更新
+                
                 loss.backward()
-                #print(loss.item())
-                # self.optimizer.step() # we can not use optimizer to further optimize the model here
-
-                # 比较参数更新前后的差异
+                
                 for name, param in self.model.named_parameters():
                     original_param = original_parameters[name]
                     if not torch.equal(original_param, param):
                         print(f"Parameter {name} has changed.")
-                    # else:
-                    #     print(f"Parameter {name} has not changed.")
 
                 epoch_loss += loss.item()
         return epoch_loss

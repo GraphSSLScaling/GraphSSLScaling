@@ -129,13 +129,10 @@ class PyGDataset(AbstractDataset):
 
     def get_data_feature(self):
         """
-        返回数据集特征，scaler是归一化方法，adj_mx是邻接矩阵，num_nodes是点的个数，
-        feature_dim是输入数据的维度，output_dim是模型输出的维度
-
         Returns:
-            dict: 包含数据集的相关特征的字典
+            dict: dataset's feature
         """
-        # print(self.dataset[0].y.shape)
+
         if self.datasetName in ["PCQM4Mv2","ZINC_full"]:
             return {
                 "input_dim": max(self.dataset.num_features, 1),

@@ -5,7 +5,6 @@ class AbstractDataset(object):
 
     def get_data(self):
         """
-        返回数据的DataLoader，包括训练数据、测试数据、验证数据
 
         Returns:
             tuple: tuple contains:
@@ -17,9 +16,7 @@ class AbstractDataset(object):
 
     def get_data_feature(self):
         """
-        返回一个 dict，包含数据集的相关特征
-
         Returns:
-            dict: 包含数据集的相关特征的字典
+            dict: dataset's feature
         """
         raise NotImplementedError("get_data_feature not implemented")

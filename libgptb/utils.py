@@ -1,7 +1,6 @@
 from typing import *
 import os
 import torch
-# import dgl
 import random
 import numpy as np
 
@@ -159,7 +158,7 @@ def trans_naming_rule(origin, origin_rule, target_rule):
     Return:
         target (str): 转换之后的结果
     """
-    # TODO: 请确保输入是符合 origin_rule，这里目前不做检查
+    
     target = ''
     if origin_rule == 'upper_camel_case' and target_rule == 'under_score_rule':
         for i, c in enumerate(origin):
@@ -271,9 +270,6 @@ def normalize(s):
     return (s.max() - s) / (s.max() - s.mean())
 
 
-# def build_dgl_graph(edge_index: torch.Tensor) -> dgl.DGLGraph:
-#     row, col = edge_index
-#     return dgl.graph((row, col))
 
 
 def batchify_dict(dicts: List[dict], aggr_func=lambda x: x):
