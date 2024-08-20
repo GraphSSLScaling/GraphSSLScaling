@@ -86,6 +86,7 @@ class JOAOExecutor(AbstractExecutor):
         self.downstream_ratio=self.config.get("downstream_ratio",0.1)
         self.mode=self.config.get("mode","fast")
         self.gamma=config.get("gamma",0.01)
+        self.num_samples = self.data_feature.get('num_samples')
 
         self.optimizer = torch.optim.Adam(model.parameters(), lr=self.learning_rate)
         self.lr_scheduler = self._build_lr_scheduler()
