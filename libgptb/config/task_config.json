@@ -1,65 +1,152 @@
 {
-    "GCL": {
-        "allowed_model": ["DGI", "GRACE", "MVGRL", "CCA", "BGRL", "GBT", "SUGRL", "SFA", "AFGRL", "COSTA", "HomoGCL","MVGRLg"],
-        "allowed_dataset": ["Cora", "CiteSeer", "PubMed","Computers", "Photo","CS","Physics"],
-        "DGI": {
-            "dataset_class": "PyGDataset",
-            "executor": "DGIExecutor",
-            "evaluator": "DGIEvaluator"
-        },
-        "SUGRL": {
-            "dataset_class": "PyGDataset",
-            "executor": "SUGRLExecutor",
-            "evaluator": "SUGRLEvaluator"
-        },
-        "CCA": {
-            "dataset_class": "DGLDataset",
-            "executor": "CCAExecutor",
-            "evaluator": "CCAEvaluator"
-        },
-        "BGRL": {
-            "dataset_class": "PyGDataset",
-            "executor": "BGRLExecutor",
-            "evaluator": "BGRLEvaluator"
-        },
-        "SFA": {
-            "dataset_class": "DGLDataset",
-            "executor": "SFAExecutor",
-            "evaluator": "SFAEvaluator"
-        },
-        "GBT": {
-            "dataset_class": "PyGDataset",
-            "executor": "GBTExecutor",
-            "evaluator": "GBTEvaluator"
-        },
-        "GRACE": {
-            "dataset_class": "DGLDataset",
-            "executor": "GRACEExecutor",
-            "evaluator": "GRACEEvaluator"
-        },
-        "MVGRL": {
-            "dataset_class": "PyGDataset",
-            "executor": "MVGRLExecutor",
-            "evaluator": "MVGRLEvaluator"
-        },
-        "COSTA": {
-            "dataset_class": "PyGDataset",
-            "executor": "COSTAExecutor",
-            "evaluator": "COSTAEvaluator"
-        },
-        "HomoGCL": {
-            "dataset_class": "DGLDataset",
-            "executor": "HomoGCLExecutor",
-            "evaluator": "HomoGCLEvaluator"
-        }
-    },
+   
     "SSGCL": {
-        "allowed_model": ["MVGRLg"],
-        "allowed_dataset": ["MUTAG", "MCF-7", "MOLT-4","P388","ZINC_full","reddit_threads"],
+        "allowed_model": ["MVGRLg","GraphCL","GraphCLE","GraphCLEN","GraphCLF","GraphCLN","JOAO","JOAOE","JOAOF","JOAON","GraphCLJSD","JOAOJSD","GraphMAE","InfoGraph","InfoGraphGTS","InfoGraphGPS","InfoGraphGIN","InfoGraphGINTwoTrans","InfoGraphGINRev","InfoGraphGINDec","InfoGraphGINDecAT","InfoGraphGINDecN","InfoGraphGINDecOne","InfoGraphGINDecTwo","InfoGraphGINDecOneN","InfoGraphGINDecTwoN","InfoGraphNCE","InfoGraphSGC","InfoGraphSGCSF"],
+        "allowed_dataset": ["ZINC_full","reddit_threads","github_stargazers","ogbg-molhiv", "ogbg-ppa", "ogbg-molpcba","PCQM4Mv2"],
         "MVGRLg": {
-            "dataset_class": "TUDataset",
+            "dataset_class": "PyGDataset",
             "executor": "MVGRLgExecutor",
             "evaluator": "MVGRLgEvaluator"
+        },
+        "GraphCL":{
+            "dataset_class": "PyGDataset",
+            "executor": "GraphCLExecutor",
+            "evaluator": "GraphCLEvaluator"
+        },
+        "GraphCLE":{
+            "dataset_class": "PyGDataset",
+            "executor": "GraphCLExecutor",
+            "evaluator": "GraphCLEvaluator"
+        },
+        "GraphCLEN":{
+            "dataset_class": "PyGDataset",
+            "executor": "GraphCLExecutor",
+            "evaluator": "GraphCLEvaluator"
+        },
+        "GraphCLF":{
+            "dataset_class": "PyGDataset",
+            "executor": "GraphCLExecutor",
+            "evaluator": "GraphCLEvaluator"
+        },
+        "GraphCLN":{
+            "dataset_class": "PyGDataset",
+            "executor": "GraphCLExecutor",
+            "evaluator": "GraphCLEvaluator"
+        },
+        "JOAO":{
+            "dataset_class": "PyGDataset",
+            "executor": "JOAOExecutor",
+            "evaluator": "JOAOEvaluator"
+        },
+        "JOAOE":{
+            "dataset_class": "PyGDataset",
+            "executor": "JOAOExecutor",
+            "evaluator": "JOAOEvaluator"
+        },
+        "JOAOF":{
+            "dataset_class": "PyGDataset",
+            "executor": "JOAOExecutor",
+            "evaluator": "JOAOEvaluator"
+        },
+        "JOAON":{
+            "dataset_class": "PyGDataset",
+            "executor": "JOAOExecutor",
+            "evaluator": "JOAOEvaluator"
+        },
+        "GraphCLJSD":{
+            "dataset_class": "PyGDataset",
+            "executor": "GraphCLExecutor",
+            "evaluator": "GraphCLEvaluator"
+        },
+        "JOAOJSD":{
+            "dataset_class": "PyGDataset",
+            "executor": "JOAOExecutor",
+            "evaluator": "JOAOEvaluator"
+        },
+        "InfoGraph": {
+            "dataset_class": "PyGDataset",
+            "executor": "InfoGraphExecutor",
+            "evaluator": "InfoGraphEvaluator"
+        },
+        "InfoGraphGTS": {
+            "dataset_class": "PyGDataset",
+            "executor": "InfoGraphExecutor",
+            "evaluator": "InfoGraphEvaluator"
+        },
+        "InfoGraphGPS": {
+            "dataset_class": "PyGDataset",
+            "executor": "InfoGraphExecutor",
+            "evaluator": "InfoGraphEvaluator"
+        },
+        "InfoGraphNCE": {
+            "dataset_class": "PyGDataset",
+            "executor": "InfoGraphExecutor",
+            "evaluator": "InfoGraphEvaluator"
+        },
+        "InfoGraphGIN": {
+            "dataset_class": "PyGDataset",
+            "executor": "InfoGraphExecutor",
+            "evaluator": "InfoGraphEvaluator"
+        },
+        "InfoGraphGINTwoTrans": {
+            "dataset_class": "PyGDataset",
+            "executor": "InfoGraphExecutor",
+            "evaluator": "InfoGraphEvaluator"
+        },
+        "InfoGraphGINRev": {
+            "dataset_class": "PyGDataset",
+            "executor": "InfoGraphExecutor",
+            "evaluator": "InfoGraphEvaluator"
+        },
+        "InfoGraphGINDec": {
+            "dataset_class": "PyGDataset",
+            "executor": "InfoGraphExecutor",
+            "evaluator": "InfoGraphEvaluator"
+        },
+        "InfoGraphGINDecAT": {
+            "dataset_class": "PyGDataset",
+            "executor": "InfoGraphExecutor",
+            "evaluator": "InfoGraphEvaluator"
+        },
+        "InfoGraphGINDecN": {
+            "dataset_class": "PyGDataset",
+            "executor": "InfoGraphExecutor",
+            "evaluator": "InfoGraphEvaluator"
+        },
+        "InfoGraphGINDecOne": {
+            "dataset_class": "PyGDataset",
+            "executor": "InfoGraphExecutor",
+            "evaluator": "InfoGraphEvaluator"
+        },
+        "InfoGraphGINDecTwo": {
+            "dataset_class": "PyGDataset",
+            "executor": "InfoGraphExecutor",
+            "evaluator": "InfoGraphEvaluator"
+        },
+        "InfoGraphGINDecOneN": {
+            "dataset_class": "PyGDataset",
+            "executor": "InfoGraphExecutor",
+            "evaluator": "InfoGraphEvaluator"
+        },
+        "InfoGraphGINDecTwoN": {
+            "dataset_class": "PyGDataset",
+            "executor": "InfoGraphExecutor",
+            "evaluator": "InfoGraphEvaluator"
+        },
+        "InfoGraphSGC": {
+            "dataset_class": "PyGDataset",
+            "executor": "InfoGraphSGCExecutor",
+            "evaluator": "InfoGraphEvaluator"
+        },
+        "InfoGraphSGCSF": {
+            "dataset_class": "PyGDataset",
+            "executor": "InfoGraphSGCExecutor",
+            "evaluator": "InfoGraphEvaluator"
+        },
+        "GraphMAE": {
+            "dataset_class": "MAEDataset",
+            "executor": "GraphMAEExecutor",
+            "evaluator": "GraphMAEEvaluator"
         }
     }
 }

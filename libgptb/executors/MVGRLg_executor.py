@@ -8,7 +8,7 @@ from logging import getLogger
 from torch.utils.tensorboard import SummaryWriter
 from libgptb.executors.abstract_executor import AbstractExecutor
 from libgptb.utils import get_evaluator, ensure_dir
-from libgptb.evaluators import get_split, SVMEvaluator
+from libgptb.evaluators import get_split, SVMEvaluator, RocAucEvaluator
 from functools import partial
 
 
@@ -67,23 +67,26 @@ class MVGRLgExecutor(AbstractExecutor):
         self.saved = self.config.get('saved_model', True)
         self.load_best_epoch = self.config.get('load_best_epoch', False)
         self.hyper_tune = self.config.get('hyper_tune', False)
-
+        self.downstream_ratio = self.config.get('downstream_ratio', 0.1)
+        self.downstream_task = self.config.get('downstream_task','original')
         self.output_dim = self.config.get('output_dim', 1)
-        # TODO
+        
         self.optimizer = self._build_optimizer()
-        # TODO
+       
         self.lr_scheduler = self._build_lr_scheduler()
         self._epoch_num = self.config.get('epoch', 0)
         if self._epoch_num > 0:
             self.load_model_with_epoch(self._epoch_num)
         self.loss_func = None
 
+        self.num_samples = self.data_feature.get('num_samples')
+
     def save_model(self, cache_name):
         """
-        将当前的模型保存到文件
+        save model to cache_name
 
         Args:
-            cache_name(str): 保存的文件名
+            cache_name(str): name to save as
         """
         ensure_dir(self.cache_dir)
         self._logger.info("Saved model at " + cache_name)
@@ -91,10 +94,10 @@ class MVGRLgExecutor(AbstractExecutor):
 
     def load_model(self, cache_name):
         """
-        加载对应模型的 cache
+        load model from cache_name
 
         Args:
-            cache_name(str): 保存的文件名
+            cache_name(str): name to load from
         """
         self._logger.info("Loaded model at " + cache_name)
         model_state, optimizer_state = torch.load(cache_name)
@@ -120,7 +123,7 @@ class MVGRLgExecutor(AbstractExecutor):
 
     def load_model_with_epoch(self, epoch):
         """
-        加载某个epoch的模型
+        load model of the given epoch
 
         Args:
             epoch(int): 轮数
@@ -134,7 +137,7 @@ class MVGRLgExecutor(AbstractExecutor):
 
     def _build_optimizer(self):
         """
-        根据全局参数`learner`选择optimizer
+        chose 'optimizer' according to 'learner'
         """
         self._logger.info('You select `{}` optimizer.'.format(self.learner.lower()))
         if self.learner.lower() == 'adam':
@@ -160,7 +163,7 @@ class MVGRLgExecutor(AbstractExecutor):
 
     def _build_lr_scheduler(self):
         """
-        根据全局参数`lr_scheduler`选择对应的lr_scheduler
+        chose 'lr_scheduler' according to 'lr_scheduler'
         """
         if self.lr_decay:
             self._logger.info('You select `{}` lr_scheduler.'.format(self.lr_scheduler_type.lower()))
@@ -199,29 +202,39 @@ class MVGRLgExecutor(AbstractExecutor):
             test_dataloader(torch.Dataloader): Dataloader
         """
         self._logger.info('Start evaluating ...')
-        #for epoch_idx in [50-1, 100-1, 500-1, 1000-1, 10000-1]:
         for epoch_idx in [10-1,20-1,40-1,60-1,80-1,100-1]:
             self.load_model_with_epoch(epoch_idx)
-            self.model.encoder_model.eval()
-            x = []
-            y = []
-            for data in dataloader:
-                data = data.to('cuda')
-                if data.x is None:
-                    num_nodes = data.batch.size(0)
-                    data.x = torch.ones((num_nodes, 1), dtype=torch.float32, device=data.batch.device)
-                _, _, g1, g2 = self.model.encoder_model(data.x, data.edge_index, data.batch)
-                x.append(g1 + g2)
-                y.append(data.y)
-            x = torch.cat(x, dim=0)
-            y = torch.cat(y, dim=0)
+            if self.downstream_task == 'original':
+                self.model.encoder_model.eval()
+                x = []
+                y = []
+                for data in dataloader['original']:
+                    data = data.to('cuda')
+                    if data.x is None:
+                        num_nodes = data.batch.size(0)
+                        data.x = torch.ones((num_nodes, 1), dtype=torch.float32, device=data.batch.device)
+                    with torch.no_grad():
+                        _, _, g1, g2 = self.model.encoder_model(data.x, data.edge_index, data.batch)
+                        x.append(g1 + g2)
+                        y.append(data.y)
+                    torch.cuda.empty_cache()
+                x = torch.cat(x, dim=0)
+                y = torch.cat(y, dim=0)
 
-            split = get_split(num_samples=x.size()[0], train_ratio=0.8, test_ratio=0.1,dataset=self.config['dataset'])
-            result = SVMEvaluator()(x, y, split)
-            print(f'(E): Best test F1Mi={result["micro_f1"]:.4f}, F1Ma={result["macro_f1"]:.4f}')
-
-
-            self._logger.info('Evaluate result is ' + json.dumps(result))
+                split = get_split(num_samples=self.num_samples, train_ratio=0.8, test_ratio=0.1,downstream_ratio = self.downstream_ratio, dataset=self.config['dataset'])
+                if self.config['dataset'] == 'ogbg-molhiv': 
+                    result = RocAucEvaluator()(x, y, split)
+                    print(f'(E): Roc-Auc={result["roc_auc"]:.4f}')
+                else:
+                    result = SVMEvaluator()(x, y, split)
+                    print(f'(E): Best test F1Mi={result["micro_f1"]:.4f}, F1Ma={result["macro_f1"]:.4f}')
+                self._logger.info('Evaluate result is ' + json.dumps(result))
+                
+            if self.downstream_task == 'loss' or self.downstream_task == 'both':
+                losses = self._train_epoch(dataloader['loss'], epoch_idx, self.loss_func,train = False)
+                result = np.mean(losses) 
+                self._logger.info('Evaluate loss is ' + json.dumps(result))
+            
             filename = datetime.datetime.now().strftime('%Y_%m_%d_%H_%M_%S') + '_' + \
                         self.config['model'] + '_' + self.config['dataset']
             save_path = self.evaluate_res_dir
@@ -246,7 +259,7 @@ class MVGRLgExecutor(AbstractExecutor):
         num_batches = len(train_dataloader)
         self._logger.info("num_batches:{}".format(num_batches))
 
-        for epoch_idx in range(self._epoch_num, self.epochs):
+        for epoch_idx in range(self._epoch_num+1, self.epochs):
             start_time = time.time()
             losses = self._train_epoch(train_dataloader, epoch_idx, self.loss_func)
             t1 = time.time()
@@ -272,8 +285,8 @@ class MVGRLgExecutor(AbstractExecutor):
                     format(epoch_idx, self.epochs, np.mean(losses),  log_lr, (end_time - start_time))
                 self._logger.info(message)
 
-            #if epoch_idx+1 in [50, 100, 500, 1000, 10000]:
-            if epoch_idx+1 in [10,20,40,60,80,100]:
+            
+            if epoch_idx+1 in [3,10,20,40,60,80,100]:
                 model_file_name = self.save_model_with_epoch(epoch_idx)
                 self._logger.info('saving to {}'.format(model_file_name))
 
@@ -299,20 +312,22 @@ class MVGRLgExecutor(AbstractExecutor):
             self.load_model_with_epoch(best_epoch)
         return min_val_loss
 
-    def _train_epoch(self, train_dataloader, epoch_idx, loss_func=None):
+    def _train_epoch(self, train_dataloader, epoch_idx, loss_func=None, train = True):
         """
-        完成模型一个轮次的训练
+        train for one epoch
 
         Args:
-            train_dataloader: 训练数据
-            epoch_idx: 轮次数
-            loss_func: 损失函数
+            train_dataloader: training data
+            epoch_idx: epoch index
+            loss_func: loss function
 
         Returns:
-            list: 每个batch的损失的数组
+            list: array of loss for each batch
         """
-        # self.model.encoder_model.train()
-        self.model.encoder_model.train()
+        if train:
+            self.model.encoder_model.train()
+        else:
+            self.model.encoder_model.eval()
         epoch_loss = 0
         for data in train_dataloader:
             data = data.to('cuda')
@@ -323,7 +338,7 @@ class MVGRLgExecutor(AbstractExecutor):
 
             h1, h2, g1, g2 = self.model.encoder_model(data.x, data.edge_index, data.batch)
             loss = self.model.contrast_model(h1=h1, h2=h2, g1=g1, g2=g2, batch=data.batch)
-            # loss = loss_func(batch)
+
             self._logger.debug(loss.item())
             loss.backward()
             self.optimizer.step()

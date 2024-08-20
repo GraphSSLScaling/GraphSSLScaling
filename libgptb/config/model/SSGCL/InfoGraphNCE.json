@@ -1,0 +1,5 @@
+{
+    "nhid":32,
+    "layers":2,
+    "loss_type":"InfoNCE"
+}

@@ -1,0 +1,34 @@
+import json
+import os
+
+
+def generate_json_files(strings, output_path):
+    if not os.path.exists(output_path):
+        os.makedirs(output_path)
+
+    for s in strings:
+        num_layers, hidden_dim = map(int, s.split('_'))
+        data = {
+            "num_layers": num_layers,
+            "hidden_dim": hidden_dim,
+            'learning_rate': 0.001
+        }
+        file_name = "{}.json".format(s)
+        file_path = os.path.join(output_path, file_name)
+        
+        with open(file_path, 'w') as json_file:
+            json.dump(data, json_file, indent=4)
+        print("Generated {}".format(file_path))
+
+strings = ["1_32", "2_32", "3_32", "4_32", "5_32",
+           "1_48", "2_48", "3_48", "4_48", "5_48", 
+           "1_64", "2_64", "3_64", "4_64", "5_64", 
+           "1_96", "2_96", "3_96", "4_96", "5_96",
+           "1_128", "2_128", "3_128", "4_128", "5_128",
+           "1_192", "2_192", "3_192", "4_192", "5_192", 
+           "1_256", "2_256", "3_256", "4_256", "5_256",
+           "1_384", "2_384", "3_384", "4_384", "5_384"]
+
+output_path = 'config_model_GraphCL'
+
+generate_json_files(strings, output_path)

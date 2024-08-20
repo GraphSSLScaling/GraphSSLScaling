@@ -6,20 +6,18 @@ from sklearn.metrics import f1_score
 from sklearn.model_selection import PredefinedSplit, GridSearchCV
 
 
-def get_split(num_samples: int, train_ratio: float = 0.8, test_ratio: float = 0.1, dataset = 'Cora'):
-    torch.manual_seed(0)
+def get_split(num_samples: int, train_ratio: float = 0.8, test_ratio: float = 0.1, downstream_ratio = 0.1, dataset = 'Cora'):
     assert train_ratio + test_ratio < 1
     train_size = int(num_samples * train_ratio)
     test_size = int(num_samples * test_ratio)
+    downstream_size = int(downstream_ratio*train_size)
     indices = torch.load("./split/{}.pt".format(dataset))
-    #indices = torch.randperm(num_samples)
-    print(f"get_split:{indices[0:10]}")
-    #torch.save(indices,"./split/{}.pt".format(dataset)) #tensor([ 772,  728, 1741,  688, 1511, 2555, 1895, 1662, 2205,  380])
+    print(f"{dataset} downstram_train:{downstream_size} test_size:{num_samples-train_size-test_size}")
     return {
-        'train': indices[:train_size],
-        'valid': indices[train_size: test_size + train_size],
-        'test': indices[test_size + train_size:]
-    }
+        'train': indices[:downstream_size],
+        'valid':indices[train_size:train_size+test_size],
+        'test': indices[train_size+test_size:]
+    } 
 
 
 def from_predefined_split(data):
@@ -48,34 +46,3 @@ def get_predefined_split(x_train, x_val, y_train, y_val, return_array=True):
         return ps, [x, y]
     return ps
 
-
-# class BaseEvaluator(ABC):
-#     @abstractmethod
-#     def evaluate(self, x: torch.FloatTensor, y: torch.LongTensor, split: dict) -> dict:
-#         pass
-
-#     def __call__(self, x: torch.FloatTensor, y: torch.LongTensor, split: dict) -> dict:
-#         for key in ['train', 'test', 'valid']:
-#             assert key in split
-
-#         result = self.evaluate(x, y, split)
-#         return result
-
-
-# class BaseSKLearnEvaluator(BaseEvaluator):
-#     def __init__(self, evaluator, params):
-#         self.evaluator = evaluator
-#         self.params = params
-
-#     def evaluate(self, x, y, split):
-#         x_train, x_test, x_val, y_train, y_test, y_val = split_to_numpy(x, y, split)
-#         ps, [x_train, y_train] = get_predefined_split(x_train, x_val, y_train, y_val)
-#         classifier = GridSearchCV(self.evaluator, self.params, cv=ps, scoring='accuracy', verbose=0)
-#         classifier.fit(x_train, y_train)
-#         test_macro = f1_score(y_test, classifier.predict(x_test), average='macro')
-#         test_micro = f1_score(y_test, classifier.predict(x_test), average='micro')
-
-#         return {
-#             'micro_f1': test_micro,
-#             'macro_f1': test_macro,
-#         }
