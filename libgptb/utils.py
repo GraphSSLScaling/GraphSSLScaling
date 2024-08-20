@@ -146,65 +146,6 @@ def ensure_dir(dir_path):
         os.makedirs(dir_path)
 
 
-def trans_naming_rule(origin, origin_rule, target_rule):
-    """
-    名字转换规则
-
-    Args:
-        origin (str): 源命名格式下的变量名
-        origin_rule (str): 源命名格式，枚举类
-        target_rule (str): 目标命名格式，枚举类
-
-    Return:
-        target (str): 转换之后的结果
-    """
-    
-    target = ''
-    if origin_rule == 'upper_camel_case' and target_rule == 'under_score_rule':
-        for i, c in enumerate(origin):
-            if i == 0:
-                target = c.lower()
-            else:
-                target += '_' + c.lower() if c.isupper() else c
-        return target
-    else:
-        raise NotImplementedError(
-            'trans naming rule only support from upper_camel_case to \
-                under_score_rule')
-
-
-def preprocess_data(data, config):
-    """
-    split by input_window and output_window
-
-    Args:
-        data: shape (T, ...)
-
-    Returns:
-        np.ndarray: (train_size/test_size, input_window, ...)
-                    (train_size/test_size, output_window, ...)
-
-    """
-    train_rate = config.get('train_rate', 0.7)
-    eval_rate = config.get('eval_rate', 0.1)
-
-    input_window = config.get('input_window', 12)
-    output_window = config.get('output_window', 3)
-
-    x, y = [], []
-    for i in range(len(data) - input_window - output_window):
-        a = data[i: i + input_window + output_window]  # (in+out, ...)
-        x.append(a[0: input_window])  # (in, ...)
-        y.append(a[input_window: input_window + output_window])  # (out, ...)
-    x = np.array(x)  # (num_samples, in, ...)
-    y = np.array(y)  # (num_samples, out, ...)
-
-    train_size = int(x.shape[0] * (train_rate + eval_rate))
-    trainx = x[:train_size]  # (train_size, in, ...)
-    trainy = y[:train_size]  # (train_size, out, ...)
-    testx = x[train_size:x.shape[0]]  # (test_size, in, ...)
-    testy = y[train_size:x.shape[0]]  # (test_size, out, ...)
-    return trainx, trainy, testx, testy
 
 
 def set_random_seed(seed):
@@ -219,51 +160,7 @@ def set_random_seed(seed):
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
     torch.backends.cudnn.deterministic = True
-def split_dataset(dataset, split_mode, *args, **kwargs):
-    assert split_mode in ['rand', 'ogb', 'wikics', 'preload']
-    if split_mode == 'rand':
-        assert 'train_ratio' in kwargs and 'test_ratio' in kwargs
-        train_ratio = kwargs['train_ratio']
-        test_ratio = kwargs['test_ratio']
-        num_samples = dataset.x.size(0)
-        train_size = int(num_samples * train_ratio)
-        test_size = int(num_samples * test_ratio)
-        indices = torch.randperm(num_samples)
-        return {
-            'train': indices[:train_size],
-            'val': indices[train_size: test_size + train_size],
-            'test': indices[test_size + train_size:]
-        }
-    elif split_mode == 'ogb':
-        return dataset.get_idx_split()
-    elif split_mode == 'wikics':
-        assert 'split_idx' in kwargs
-        split_idx = kwargs['split_idx']
-        return {
-            'train': dataset.train_mask[:, split_idx],
-            'test': dataset.test_mask,
-            'val': dataset.val_mask[:, split_idx]
-        }
-    elif split_mode == 'preload':
-        assert 'preload_split' in kwargs
-        assert kwargs['preload_split'] is not None
-        train_mask, test_mask, val_mask = kwargs['preload_split']
-        return {
-            'train': train_mask,
-            'test': test_mask,
-            'val': val_mask
-        }
 
-
-def seed_everything(seed):
-    random.seed(seed)
-    os.environ['PYTHONHASHSEED'] = str(seed)
-    np.random.seed(seed)
-
-    torch.backends.cudnn.benchmark = False
-    torch.backends.cudnn.deterministic = True
-    torch.manual_seed(seed)
-    torch.cuda.manual_seed_all(seed)
 
 
 def normalize(s):
@@ -271,17 +168,6 @@ def normalize(s):
 
 
 
-
-def batchify_dict(dicts: List[dict], aggr_func=lambda x: x):
-    res = dict()
-    for d in dicts:
-        for k, v in d.items():
-            if k not in res:
-                res[k] = [v]
-            else:
-                res[k].append(v)
-    res = {k: aggr_func(v) for k, v in res.items()}
-    return res
 
 """
 store the arguments can be modified by the user
