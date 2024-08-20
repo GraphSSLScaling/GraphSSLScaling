@@ -7,14 +7,13 @@ import torch
 from logging import getLogger
 from torch.utils.tensorboard import SummaryWriter
 from libgptb.executors.abstract_executor import AbstractExecutor
-from libgptb.utils import get_evaluator, ensure_dir
+from libgptb.utils import ensure_dir
 from libgptb.evaluators import get_split, SVMEvaluator, RocAucEvaluator, PyTorchEvaluator, Logits_InfoGraph, APEvaluator, LREvaluator,OGBLSCEvaluator,MLPRegressionModel
 from functools import partial
 from sklearn.metrics import mean_squared_error, mean_absolute_error, mean_absolute_percentage_error
     
 class InfoGraphExecutor(AbstractExecutor):
     def __init__(self, config, model, data_feature):
-        self.evaluator = get_evaluator(config)
         self.config = config
         self.data_feature = data_feature
         self.device = self.config.get('device', torch.device('cpu'))
