@@ -15,7 +15,7 @@ from torch_geometric.nn import global_add_pool, global_mean_pool, global_max_poo
 from sklearn.model_selection import StratifiedKFold, GridSearchCV
 from torch.utils.tensorboard import SummaryWriter
 from libgptb.executors.abstract_executor import AbstractExecutor
-from libgptb.utils import get_evaluator, ensure_dir
+from libgptb.utils import ensure_dir
 from libgptb.evaluators import get_split, LREvaluator, SVMEvaluator, PyTorchEvaluator, RocAucEvaluator, Logits_GraphMAE, APEvaluator,OGBLSCEvaluator,MLPRegressionModel
 from sklearn.metrics import mean_squared_error, mean_absolute_error, mean_absolute_percentage_error
 

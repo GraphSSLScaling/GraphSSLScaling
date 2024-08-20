@@ -11,7 +11,7 @@ import torch.nn.functional as F
 from logging import getLogger
 from torch.utils.tensorboard import SummaryWriter
 from libgptb.executors.abstract_executor import AbstractExecutor
-from libgptb.utils import get_evaluator, ensure_dir
+from libgptb.utils import  ensure_dir
 from functools import partial
 from libgptb.evaluators import get_split,SVMEvaluator,RocAucEvaluator,PyTorchEvaluator,Logits_GraphCL,APEvaluator
 from libgptb.models import DualBranchContrast
